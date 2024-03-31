@@ -15,7 +15,7 @@ def search_user(user_search):
 
 def editing_user(user_editing):
   del user_editing[0]
-  cursor.execute(f'UPDATE Users SET {user_editing[0]} = ? WHERE id = ?', (user_editing[2], user_editing[1]))
+  cursor.execute(f'UPDATE Users SET {user_editing[2]} = ? WHERE {user_editing[0]} = ?', (user_editing[3], user_editing[1]))
 
 def delete_user(user_del):
   del user_del[0]
@@ -45,7 +45,7 @@ with sqlite3.connect('my_database.db') as connection:
     try:
       # Начинаем транзакцию автоматически
       with connection:
-        input_functional = input("Введите команду(h для инструкции)").split()
+        input_functional = input("Введите команду(h для инструкции): ").split()
         if input_functional[0] == 'q':
           break
         elif input_functional[0] == 'V':
