@@ -1,47 +1,31 @@
 import sqlite3
 
-def new_user():
-  # Выполняем операции
-  input_user = input("Ведите через пробел данные(телефон, фамилия, имя, отчество): ").split()
+def new_user(user_input):
+  del user_input[0]
   cursor.execute('INSERT INTO Users (telephone, surname, username, middle_name) VALUES (?, ?, ?, ?)',
-                 (int(input_user[0]), input_user[1], input_user[2], input_user[3]))
+                 (user_input[0], user_input[1], user_input[2], user_input[3]))
 
-def search_user():
-  input_search = input("Введите через пробел, название столбца(id, telephone, surname, username, middle_name) и данные: ").split()
-  cursor.execute(f'SELECT id, telephone, surname, username, middle_name FROM Users WHERE {input_search[0]} = ?',
-                 (input_search[1],))
+def search_user(user_search):
+  del user_search[0]
+  string = f'SELECT id, telephone, surname, username, middle_name FROM Users WHERE {user_search[0]} {user_search[1]} ?'
+  cursor.execute(string, (user_search[2],))
   users = cursor.fetchall()
   for user in users:
     print(user)
 
-def editing_user():
-  input_search = input("Введите через пробел, название столбца(id, telephone, surname, username, middle_name),\n id того кого хотите заменить в этом столбце и заменяющие данные: ").split()
-  cursor.execute(f'UPDATE Users SET {input_search[0]} = ? WHERE id = ?', (input_search[2], input_search[1]))
+def editing_user(user_editing):
+  del user_editing[0]
+  cursor.execute(f'UPDATE Users SET {user_editing[0]} = ? WHERE id = ?', (user_editing[2], user_editing[1]))
 
-def delete_user():
-  input_delete = input("Введите через пробел, название столбца(id, telephone, surname, username, middle_name) и данные: ").split()
-  cursor.execute(f'DELETE FROM Users WHERE {input_delete[0]} = ?', (input_delete[1],))
-
-def viewing():
-  # Выбираем всех пользователей
-  cursor.execute('SELECT * FROM Users')
-  users = cursor.fetchall()
-
-  # Выводим результаты
-  for user in users:
-    print(user)
-
-def saving():
-  #Сохраняем изменения
-  connection.commit()
+def delete_user(user_del):
+  del user_del[0]
+  cursor.execute(f'DELETE FROM Users WHERE {user_del[0]} = ?', (user_del[1],))
 
 functional = {
-  'добавление' : new_user,
-  'поиск' : search_user,
-  'изменение данных' : editing_user,
-  'удаление' : delete_user,
-  'просмотр' : viewing,
-
+  '+' : new_user,
+  'S' : search_user,
+  'E' : editing_user,
+  '-S' : delete_user,
 }
 
 # Создаем подключение к базе данных (файл my_database.db будет создан)
@@ -61,10 +45,20 @@ with sqlite3.connect('my_database.db') as connection:
     try:
       # Начинаем транзакцию автоматически
       with connection:
-        input_functional = input("Введите что вы хотите сделать (просмотр, сохранение, добавление, поиск, удаление, изменение данных, выход): ")
-        if input_functional == 'выход':
+        input_functional = input("Введите команду(h для инструкции)").split()
+        if input_functional[0] == 'q':
           break
-        functional[input_functional]()
+        elif input_functional[0] == 'V':
+            # Выбираем всех пользователей
+            cursor.execute('SELECT * FROM Users')
+            users = cursor.fetchall()
+            for user in users:
+                print(user)
+        elif input_functional[0] == 'C':
+            #Сохраняем изменения
+            connection.commit()
+        else:
+          functional[input_functional[0]](input_functional)
 
     except:
       # Ошибки будут приводить к автоматическому откату транзакции
